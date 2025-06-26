@@ -24,11 +24,12 @@ MahjongAI - 段階的な開発手法を用いて、最終的に人間と対戦�
 
 ## 開発セットアップ
 
-- **プログラミング言語**: Python 3.11
+- **プログラミング言語**: Python 3.10.12 ✅
 - **フレームワーク**: Flask（Phase 2以降）
 - **データベース**: SQLite
-- **依存関係管理**: Poetry
-- **テストフレームワーク**: pytest
+- **依存関係管理**: Poetry ✅
+- **テストフレームワーク**: pytest ✅
+- **開発ツール**: Black, isort, flake8, mypy ✅
 - **フロントエンド**: TypeScript + React（Phase 2以降）
 
 ## プロジェクト構造
@@ -52,14 +53,12 @@ Mahjong_AI_with_Claude/
 ### 環境セットアップ
 
 ```bash
-# Poetryのインストール（未インストールの場合）
-curl -sSL https://install.python-poetry.org | python3 -
-
-# 依存関係のインストール
+# Poetry環境のセットアップ（初回のみ）
+export PATH="/home/sylphy/.local/bin:$PATH"
 poetry install
 
-# 仮想環境のアクティベート
-poetry shell
+# 開発ツールの実行
+poetry run python scripts/dev.py
 ```
 
 ### テスト実行
@@ -92,6 +91,9 @@ poetry run flake8 src tests
 
 # 型チェック（mypy）
 poetry run mypy src
+
+# 全ツール一括実行
+poetry run python scripts/dev.py
 ```
 
 ## アーキテクチャの考慮事項
@@ -136,12 +138,71 @@ poetry run mypy src
 5. CUIインターフェース
 6. ゲームフロー制御
 
+## コーディング規約
+
+### 型アノテーション
+- **必ず型を明記すること**
+- 関数の引数、戻り値、クラス属性にすべて型アノテーションを付ける
+- `typing`モジュールの型ヒントを積極的に活用する
+
+```python
+from typing import List, Dict, Optional, Union
+
+def calculate_shanten(tiles: List[Tile]) -> int:
+    """向聴数を計算する"""
+    pass
+
+class Hand:
+    """手牌クラス"""
+    tiles: List[Tile]
+    is_riichi: bool
+    
+    def __init__(self, tiles: List[Tile]) -> None:
+        self.tiles = tiles
+        self.is_riichi = False
+```
+
+### ドキュメンテーション
+- **必ずPyDocを書くこと**
+- すべてのクラス、関数、メソッドにdocstringを記述する
+- Google形式のdocstringを使用する
+
+```python
+def is_winning_hand(tiles: List[Tile]) -> bool:
+    """手牌が和了形かどうかを判定する
+    
+    Args:
+        tiles: 判定対象の牌のリスト（14枚）
+        
+    Returns:
+        和了形の場合True、そうでなければFalse
+        
+    Raises:
+        ValueError: 牌数が14枚でない場合
+        
+    Examples:
+        >>> tiles = [Tile('sou', 1), Tile('sou', 1), ...]
+        >>> is_winning_hand(tiles)
+        True
+    """
+    if len(tiles) != 14:
+        raise ValueError("牌数は14枚である必要があります")
+    return _check_normal_form(tiles) or _check_seven_pairs(tiles)
+```
+
+### その他の規約
+- クラス名: PascalCase (`TileType`, `GameState`)
+- 関数・変数名: snake_case (`calculate_shanten`, `is_winning`)
+- 定数: UPPER_SNAKE_CASE (`MAX_TILES`, `SUIT_TYPES`)
+- プライベートメソッド: アンダースコア接頭辞 (`_check_pairs`)
+
 ## 開発ワークフロー
 
 1. テスト駆動開発（TDD）で進める
 2. 機能追加前にテストを作成
 3. コミット前にすべてのテストが通ることを確認
 4. コード品質ツールを実行してクリーンなコードを維持
+5. 型チェック（mypy）とdocstringの記述を必須とする
 
 ## 参考資料
 
